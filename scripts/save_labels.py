@@ -8,6 +8,9 @@ df = pd.read_csv("data/preprocessed_data.csv")
 labels = df["Label"].values
 
 # Save as .npy
+import os
+os.makedirs("features", exist_ok=True)
 np.save("features/labels.npy", labels)
+
 
 print(" Labels saved as features/labels.npy")

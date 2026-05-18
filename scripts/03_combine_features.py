@@ -29,4 +29,7 @@ print(f"Combined feature shape: {combined_features.shape}")
 # Save combined features
 os.makedirs("outputs/features", exist_ok=True)
 np.save("outputs/features/combined_features.npy", combined_features)
+os.makedirs("features", exist_ok=True)
+np.save("features/combined_features.npy", combined_features)
 print("Saved")
+

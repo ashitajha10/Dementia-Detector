@@ -23,6 +23,7 @@ os.makedirs("outputs/results", exist_ok=True)
 # Apply Standard Scaler and SMOTE
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
+joblib.dump(scaler, "outputs/models/scaler.pkl")
 smote = SMOTE(random_state=42)
 X_bal, y_bal = smote.fit_resample(X_scaled, y)
 

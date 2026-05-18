@@ -33,8 +33,13 @@ joblib.dump(count_vec, "outputs/vectorizers/count_vectorizer.pkl")
 
 
 print("Loading Word2Vec model...")
-word2vec_model = api.load("word2vec-google-news-300")
-word2vec_model.save("outputs/models/word2vec_model.bin")
+w2v_path = "outputs/models/word2vec_model.bin"
+if os.path.exists(w2v_path):
+    from gensim.models import KeyedVectors
+    word2vec_model = KeyedVectors.load(w2v_path)
+else:
+    word2vec_model = api.load("word2vec-google-news-300")
+    word2vec_model.save(w2v_path)
 
 def get_avg_embedding(text, model, dim=300):
     words = text.split()

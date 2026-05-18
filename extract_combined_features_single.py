@@ -4,18 +4,31 @@ import gensim
 import spacy
 import re
 
+import os
+
 # Load all saved vectorizers/models
 tfidf_vectorizer = joblib.load("outputs/vectorizers/tfidf_vectorizer.pkl")
 count_vectorizer = joblib.load("outputs/vectorizers/count_vectorizer.pkl")
 frequency_vectorizer = joblib.load("outputs/vectorizers/frequency_vectorizer.pkl")
 
 # Load Word2Vec and GloVe models
-word2vec_model = gensim.models.KeyedVectors.load("outputs/models/word2vec_model.bin")
+w2v_path = "outputs/models/word2vec_model.bin"
 import gensim.downloader as api
+if os.path.exists(w2v_path):
+    word2vec_model = gensim.models.KeyedVectors.load(w2v_path, mmap='r')
+else:
+    print("Word2Vec model not found locally. Downloading from Gensim api...")
+    word2vec_model = api.load("word2vec-google-news-300")
+    os.makedirs("outputs/models", exist_ok=True)
+    word2vec_model.save(w2v_path)
+
 glove_model = api.load("glove-wiki-gigaword-300")
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_md")
+
+# Load StandardScaler
+scaler = joblib.load("outputs/models/scaler.pkl")
 
 # Hesitation words
 hesitation_words = {'uh', 'um', 'erm', 'ah', 'eh', 'hmm'}
@@ -77,4 +90,5 @@ def extract_features(text):
     ], axis=1)
 
     print("Combined shape:", combined.shape)
-    return combined
+    scaled_combined = scaler.transform(combined)
+    return scaled_combined
