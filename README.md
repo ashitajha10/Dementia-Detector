@@ -1,3 +1,15 @@
+---
+title: Dementia Detector
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.57.0
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # 🧠 Early Dementia Detection using Machine Learning
 
 An advanced machine learning system developed to detect early signs of dementia from linguistic and speech-derived features.  
