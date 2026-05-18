@@ -6,36 +6,56 @@ import re
 
 import os
 
-# Load all saved vectorizers/models
-tfidf_vectorizer = joblib.load("outputs/vectorizers/tfidf_vectorizer.pkl")
-count_vectorizer = joblib.load("outputs/vectorizers/count_vectorizer.pkl")
-frequency_vectorizer = joblib.load("outputs/vectorizers/frequency_vectorizer.pkl")
+# Placeholders for lazy loading
+tfidf_vectorizer = None
+count_vectorizer = None
+frequency_vectorizer = None
+word2vec_model = None
+glove_model = None
+nlp = None
+scaler = None
 
-# Load Word2Vec and GloVe models
-w2v_path = "outputs/models/word2vec_model.bin"
-import gensim.downloader as api
-if os.path.exists(w2v_path):
-    word2vec_model = gensim.models.KeyedVectors.load(w2v_path, mmap='r')
-else:
-    print("Word2Vec model not found locally. Downloading from Gensim api...")
-    word2vec_model = api.load("word2vec-google-news-300")
-    os.makedirs("outputs/models", exist_ok=True)
-    word2vec_model.save(w2v_path)
+# Hesitation words
+hesitation_words = {'uh', 'um', 'erm', 'ah', 'eh', 'hmm'}
 
-glove_model = api.load("glove-wiki-gigaword-300")
+def load_heavy_models():
+    global tfidf_vectorizer, count_vectorizer, frequency_vectorizer
+    global word2vec_model, glove_model, nlp, scaler
+    
+    if word2vec_model is not None:
+        return
+        
+    print("Lazily loading heavy ML models...")
+    
+    # Load all saved vectorizers/models
+    tfidf_vectorizer = joblib.load("outputs/vectorizers/tfidf_vectorizer.pkl")
+    count_vectorizer = joblib.load("outputs/vectorizers/count_vectorizer.pkl")
+    frequency_vectorizer = joblib.load("outputs/vectorizers/frequency_vectorizer.pkl")
+    scaler = joblib.load("outputs/models/scaler.pkl")
 
-# Load spaCy model
-try:
-    nlp = spacy.load("en_core_web_md")
-except OSError:
-    import subprocess
-    import sys
-    print("SpaCy en_core_web_md model not found. Downloading...")
-    subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_md"], check=True)
-    nlp = spacy.load("en_core_web_md")
+    # Load Word2Vec
+    w2v_path = "outputs/models/word2vec_model.bin"
+    import gensim.downloader as api
+    if os.path.exists(w2v_path):
+        word2vec_model = gensim.models.KeyedVectors.load(w2v_path, mmap='r')
+    else:
+        print("Word2Vec model not found locally. Downloading from Gensim api...")
+        word2vec_model = api.load("word2vec-google-news-300")
+        os.makedirs("outputs/models", exist_ok=True)
+        word2vec_model.save(w2v_path)
 
-# Load StandardScaler
-scaler = joblib.load("outputs/models/scaler.pkl")
+    # Load GloVe
+    glove_model = api.load("glove-wiki-gigaword-300")
+
+    # Load spaCy
+    try:
+        nlp = spacy.load("en_core_web_md")
+    except OSError:
+        import subprocess
+        import sys
+        print("SpaCy en_core_web_md model not found. Downloading...")
+        subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_md"], check=True)
+        nlp = spacy.load("en_core_web_md")
 
 # Hesitation words
 hesitation_words = {'uh', 'um', 'erm', 'ah', 'eh', 'hmm'}
@@ -62,6 +82,7 @@ def extract_linguistic_features(text):
     return [num_tokens, num_sentences, avg_token_length, noun_count, verb_count]
 
 def extract_features(text):
+    load_heavy_models()
     text = clean_text(text)
 
     # Vectorizer-based features
