@@ -25,7 +25,14 @@ else:
 glove_model = api.load("glove-wiki-gigaword-300")
 
 # Load spaCy model
-nlp = spacy.load("en_core_web_md")
+try:
+    nlp = spacy.load("en_core_web_md")
+except OSError:
+    import subprocess
+    import sys
+    print("SpaCy en_core_web_md model not found. Downloading...")
+    subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_md"], check=True)
+    nlp = spacy.load("en_core_web_md")
 
 # Load StandardScaler
 scaler = joblib.load("outputs/models/scaler.pkl")
