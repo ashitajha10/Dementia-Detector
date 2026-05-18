@@ -6,7 +6,7 @@ scikit-learn
 joblib
 matplotlib
 xgboost
-gensim
+gensim==4.3.3
 spacy
 imbalanced-learn
 seaborn
